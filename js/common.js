@@ -6,6 +6,9 @@ const weightInput = document.getElementById('weight');
 const ctx = document.getElementById("myLineChart");
 const weightChart = document.getElementById("weightChart");
 
+
+
+
 // 全角数字を半角数字に変換する関数
 function convertToHalfWidth(input) {
   return input.replace(/[０-９]/g, function (s) {
@@ -28,6 +31,21 @@ weightInput.addEventListener('input', function () {
 
 let selectedDate = null;
 
+// モーダルが開かれたときに体重と体調をフォームに反映させる
+const updateFormWithRecord = (record) => {
+  weightInput.value = record.weight; // 体重をフォームに入力
+
+  // 体調のラジオボタンを選択する処理
+  const conditionRadio = document.querySelectorAll('input[name="condition"]');
+  conditionRadio.forEach((radio) => {
+    if (radio.value === record.condition) {
+      radio.checked = true; // 該当する体調のラジオボタンをチェック
+    } else {
+      radio.checked = false; // 他のラジオボタンはチェックを外す
+    }
+  });
+};
+
 // ローカルストレージからデータを読み込む
 const healthRecords = JSON.parse(localStorage.getItem("healthRecords")) || [];
 
@@ -35,6 +53,9 @@ const healthRecords = JSON.parse(localStorage.getItem("healthRecords")) || [];
 const calendar = new FullCalendar.Calendar(calendarEl, {
   initialView: 'dayGridMonth', // 月表示
   locale: 'ja', // 日本語対応
+  buttonText: {
+    today: '本日へ'  // 「Today」ボタンのラベルを変更
+  },
   dateClick: function (info) { // 日付マスのクリックイベント
     selectedDate = info.dateStr; // 選択された日付を保存
 
@@ -42,7 +63,7 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
     const existingRecord = healthRecords.find(record => record.date === selectedDate);
 
     if (existingRecord) {
-      weightInput.value = existingRecord.weight; // 既存データをフォームに入力
+      updateFormWithRecord(existingRecord); // 体重と体調をフォームに反映
     } else {
       recordForm.reset(); // データがない場合はフォームをリセット
     }
@@ -60,8 +81,10 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
     const existingRecord = healthRecords.find(record => record.date === selectedDate);
     console.log(existingRecord);
     if (existingRecord) {
-      weightInput.value = existingRecord.weight;
+      updateFormWithRecord(existingRecord); // 体重と体調をフォームに反映
     }
+    //
+
     modal.classList.add('active');
   }
 });
@@ -74,6 +97,18 @@ healthRecords.forEach(record => {
     allDay: true, // 終日イベント
     backgroundColor: 'green', // イベント背景色
   });
+
+  calendar.addEvent({
+    title: `体調: 😄${record.condition}`,
+    start: record.date,
+    allDay: true, // 終日イベント
+    backgroundColor: 'blue', // イベント背景色
+  });
+
+
+
+
+
 });
 
 calendar.render();
@@ -157,6 +192,7 @@ function updateChart() {
 recordForm.addEventListener('submit', function (e) {
   e.preventDefault();
   const weight = weightInput.value;
+  const condition = document.querySelector('input[name="condition"]:checked') ? document.querySelector('input[name="condition"]:checked').value : "未設定";
 
   // 既存データがあるか確認
   const existingRecordIndex = healthRecords.findIndex(record => record.date === selectedDate);
@@ -164,11 +200,13 @@ recordForm.addEventListener('submit', function (e) {
   if (existingRecordIndex !== -1) {
     // 既存データを更新
     healthRecords[existingRecordIndex].weight = weight;
+    healthRecords[existingRecordIndex].condition = condition;
   } else {
     // 新しいデータを追加
     healthRecords.push({
       id: `${Date.now()} - ${Math.random().toString(36).substr(2, 9)}`,
       weight: weight,
+      condition: condition,
       date: selectedDate,
     });
   }
@@ -185,9 +223,16 @@ recordForm.addEventListener('submit', function (e) {
       allDay: true,
       backgroundColor: 'green',
     });
+    calendar.addEvent({
+      title: `体調:😄 ${record.condition}`,
+      start: record.date,
+      allDay: true,
+      backgroundColor: 'blue', // 色を変えた方がわかりやすいかも
+    });
   });
 
-  alert(`体重 ${weight}kg を記録しました: ${selectedDate}`);
+
+  alert(`体重 ${weight}kg と体調 (${condition}) を記録しました: ${selectedDate}`);
 
   // グラフを更新
   updateChart();
@@ -207,6 +252,8 @@ document.getElementById('btnChart').addEventListener('click', function () {
   const weightChart = document.getElementById('weightChart');
   weightChart.classList.toggle('active');
 });
+
+
 
 
 // ページロード時にグラフを初期化

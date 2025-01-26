@@ -129,20 +129,25 @@ button:focus {
 
 .fc .fc-button:focus {
   box-shadow: none;
+  outline: 0;
 }
 
 .fc .fc-button-primary:focus {
   box-shadow: none;
+  outline: 0;
 }
 
 .fc-theme-standard .fc-scrollgrid {
   border-top: none;
+  outline: 0;
 }
 
 .fc .fc-button-primary:not(:disabled).fc-button-active, .fc .fc-button-primary:not(:disabled):active {
   box-shadow: none;
+  outline: 0;
 }
 
 .fc .fc-button-primary:not(:disabled).fc-button-active:focus, .fc .fc-button-primary:not(:disabled):active:focus {
   box-shadow: none;
+  outline: 0;
 }/*# sourceMappingURL=style.css.map */
