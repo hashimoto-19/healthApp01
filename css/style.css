@@ -133,4 +133,16 @@ button:focus {
 
 .fc .fc-button-primary:focus {
   box-shadow: none;
+}
+
+.fc-theme-standard .fc-scrollgrid {
+  border-top: none;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active, .fc .fc-button-primary:not(:disabled):active {
+  box-shadow: none;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active:focus, .fc .fc-button-primary:not(:disabled):active:focus {
+  box-shadow: none;
 }/*# sourceMappingURL=style.css.map */
