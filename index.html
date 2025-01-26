@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>健康アプリ</title>
+	<link rel="stylesheet" href="./css/reset.css">
+	<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/main.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="./css/style.css">
+
+	<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
+	<script src="./js/common.js" defer></script>
+
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link
+		href="https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&family=Gothic+A1&family=Zen+Kaku+Gothic+Antique&family=Zen+Kaku+Gothic+New&display=swap"
+		rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+		integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+		crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body>
+	<div class="memo"></div>
+	<main>
+
+		<section>
+			<div class="btnWrap">
+				<h1>①カレンダー</h1><button id="btnChart" type="button">グラフ</button>
+			</div>
+			<div id='calendar' style="width: 100%; height: 500px;"></div>
+		</section>
+
+		<section id="weightChart" class="weightChart">
+			<h1>②折れ線グラフ</h1>
+			<div class="">
+				<!-- ボタンpositionで調整する。 -->
+				<canvas id="myLineChart"></canvas>
+			</div>
+
+		</section>
+
+	</main>
+
+	<!-- モーダル　情報入力 -->
+	<div class="modal" id="modal">
+		<h2>体重記録</h2>
+		<form id="recordForm">
+			<label for="weight">体重 (kg):</label>
+			<input type="text" id="weight" name="weight" required><br>
+			<h3>体調</h3>
+			<div>
+				<input type="radio" id="good" name="condition" value="良い">
+				<label for="good">良い</label>
+			</div>
+			<div>
+				<input type="radio" id="normal" name="condition" value="普通">
+				<label for="normal">普通</label>
+			</div>
+			<div>
+				<input type="radio" id="bad" name="condition" value="悪い">
+				<label for="bad">悪い</label>
+			</div>
+			<br>
+			<button type="submit">保存</button>
+			<button type="button" id="cancelModal">キャンセル</button>
+		</form>
+	</div>
+
+
+</body>
+
+</html>

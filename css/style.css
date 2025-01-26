@@ -1,0 +1,136 @@
+@charset "UTF-8";
+*,
+::before,
+*::after {
+  box-sizing: border-box;
+}
+
+a {
+  color: #333;
+  text-decoration: none;
+}
+
+main {
+  margin: 0px auto;
+  padding: 20px 0;
+  max-width: 1000px;
+  width: 100%;
+}
+
+/* モーダルのスタイル */
+.modal {
+  translate: 0 100%;
+  position: fixed;
+  bottom: 0; /* 画面の下部に配置 */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  height: 50%; /* 高さを画面の半分に設定 */
+  background: white;
+  padding: 20px;
+  z-index: 1000;
+  border: 1px solid #333;
+  transition: 0.5s;
+}
+
+.modal.active {
+  translate: none;
+}
+
+.weightChart {
+  translate: 0 100%;
+  position: fixed;
+  bottom: 0; /* 画面の下部に配置 */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  background: white;
+  padding: 20px;
+  z-index: 1001;
+  border: 1px solid #444;
+  transition: 0.5s;
+}
+
+.weightChart.active {
+  translate: none;
+}
+
+.fc .fc-toolbar.fc-header-toolbar {
+  background-color: #4DD0CC;
+  margin-bottom: 0;
+  padding: 20px;
+}
+
+.fc-toolbar-title {
+  color: #FFFFFF;
+}
+
+.fc .fc-button-primary:disabled {
+  background-color: #ac4747;
+}
+
+.fc-day-sun {
+  background-color: #ffe6e6; /* 日曜日を赤っぽい背景色に */
+  color: red; /* テキストも赤 */
+}
+
+.fc-day-sat {
+  background-color: #e6f7ff; /* 土曜日を青っぽい背景色に */
+  color: blue; /* テキストも青 */
+}
+
+/* 日曜日のテキストを赤に変更 */
+.fc-scrollgrid-sync-inner a[aria-label=日曜日] {
+  color: red; /* テキスト色 */
+}
+
+/* 月曜日のテキストを青に変更 */
+.fc-scrollgrid-sync-inner a[aria-label=土曜日] {
+  color: blue;
+}
+
+.fc-theme-standard th {
+  background-color: #4DD0CC;
+  border: none;
+}
+
+.fc .fc-button-primary:disabled {
+  background-color: #FFFFFF;
+  color: #4DD0CC;
+}
+
+.fc .fc-button-primary:not(:disabled):active {
+  background-color: #FFFFFF;
+}
+
+.fc .fc-button-primary {
+  background-color: #FFFFFF;
+  color: #4DD0CC;
+  border: none;
+}
+
+.fc .fc-button-primary:hover {
+  background-color: #FFFFFF;
+  color: #4DD0CC;
+}
+
+.presentation .row {
+  background-color: #4DD0CC;
+}
+
+button:focus {
+  outline: 0;
+  box-shadow: none;
+}
+
+.fc .fc-button:focus {
+  box-shadow: none;
+}
+
+.fc .fc-button-primary:focus {
+  box-shadow: none;
+}/*# sourceMappingURL=style.css.map */
