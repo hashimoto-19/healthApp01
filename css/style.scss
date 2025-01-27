@@ -162,3 +162,20 @@ outline:0;
   box-shadow: none;
   outline:0;
 }
+
+.btnWrap {
+  display: flex;
+  h1 {
+    display: inline-block;
+  }
+  button {
+    
+    display: inline-block;
+  }
+}
+
+// .fc-day-other {
+//   .fc-daygrid-day-top, .fc-scrollgrid-sync-inner .fc-col-header-cell-cushion, .fc-list-day-cushion {
+//     color: grey;
+//   }
+// }
