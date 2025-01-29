@@ -54,7 +54,7 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   initialView: 'dayGridMonth', // 月表示
   locale: 'ja', // 日本語対応
   buttonText: {
-    today: '本日へ'  // 「Today」ボタンのラベルを変更
+    today: '今月'  // 「Today」ボタンのラベルを変更
   },
   headerToolbar: {
     left: 'prev,next today',
@@ -103,7 +103,6 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
     modal.classList.add('active');
   }
 });
-
 // ローカルストレージに保存されている体重データをカレンダーに追加
 healthRecords.forEach(record => {
   calendar.addEvent({
@@ -119,11 +118,6 @@ healthRecords.forEach(record => {
     allDay: true, // 終日イベント
     backgroundColor: 'blue', // イベント背景色
   });
-
-
-
-
-
 });
 
 calendar.render();
