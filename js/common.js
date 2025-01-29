@@ -56,6 +56,21 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   buttonText: {
     today: '本日へ'  // 「Today」ボタンのラベルを変更
   },
+  headerToolbar: {
+    left: 'prev,next today',
+    center: 'title',
+    right: 'customButton' // ボタンを右側に追加
+  },
+  titleFormat: { year: 'numeric', month: 'long' },
+  customButtons: {
+    customButton: {
+      text: 'グラフを見る', // ボタンのテキスト
+      className: 'btnChart',
+      click: function () {
+        alert('ボタンがクリックされました！');
+      }
+    }
+  },
   dateClick: function (info) { // 日付マスのクリックイベント
     selectedDate = info.dateStr; // 選択された日付を保存
 
@@ -248,7 +263,7 @@ cancelModalButton.addEventListener('click', function () {
   recordForm.reset();
 });
 
-document.getElementById('btnChart').addEventListener('click', function () {
+document.querySelector('.btnChart').addEventListener('click', function () {
   const weightChart = document.getElementById('weightChart');
   weightChart.classList.toggle('active');
 });
