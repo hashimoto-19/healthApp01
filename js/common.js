@@ -5,7 +5,7 @@ const recordForm = document.getElementById('recordForm');
 const weightInput = document.getElementById('weight');
 const ctx = document.getElementById("myLineChart");
 const weightChart = document.getElementById("weightChart");
-
+const closeChart = document.getElementById("closeChart");
 
 
 
@@ -65,11 +65,21 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   customButtons: {
     customButton: {
       text: 'グラフを見る', // ボタンのテキスト
-      className: 'btnChart',
       click: function () {
-        alert('ボタンがクリックされました！');
+
+        const weightChart = document.getElementById('weightChart');
+        weightChart.classList.toggle('active');
+
       }
     }
+  },
+  eventDidMount: function () {
+    setTimeout(() => {
+      const btn = document.querySelector('.fc-customButton-button');
+      if (btn && !btn.id) {
+        btn.setAttribute('id', 'btnChart'); // IDを設定
+      }
+    }, 0);
   },
   dateClick: function (info) { // 日付マスのクリックイベント
     selectedDate = info.dateStr; // 選択された日付を保存
@@ -186,6 +196,10 @@ let myLineChart = new Chart(ctx, {
         }
       }
     },
+    // onClick: function(event, elements) {
+    //   // クリック時の動作を無効化（何もしない）
+    //   event.stopPropagation();
+    // }
   }
 });
 
@@ -257,13 +271,22 @@ cancelModalButton.addEventListener('click', function () {
   recordForm.reset();
 });
 
-document.querySelector('.btnChart').addEventListener('click', function () {
+document.getElementById('btnChart').addEventListener('click', function () {
   const weightChart = document.getElementById('weightChart');
   weightChart.classList.toggle('active');
 });
 
+closeChart.addEventListener("click", function () {
+  weightChart.classList.toggle('active');
+});
 
-
+//期間切り替え
+document.querySelectorAll(".chartToggle").forEach(button => {
+  button.addEventListener("click", function () {
+    const days = parseInt(this.dataset.period, 10);
+    updateChart(days);
+  });
+});
 
 // ページロード時にグラフを初期化
 updateChart();
