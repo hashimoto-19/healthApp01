@@ -64,22 +64,28 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   titleFormat: { year: 'numeric', month: 'long' },
   customButtons: {
     customButton: {
-      text: 'グラフを見る', // ボタンのテキスト
+      text: 'グラフ', // ボタンのテキスト
       click: function () {
 
         const weightChart = document.getElementById('weightChart');
-        weightChart.classList.toggle('active');
+        weightChart.classList.add('active');
 
       }
     }
   },
   eventDidMount: function () {
-    setTimeout(() => {
-      const btn = document.querySelector('.fc-customButton-button');
-      if (btn && !btn.id) {
-        btn.setAttribute('id', 'btnChart'); // IDを設定
-      }
-    }, 0);
+    //カレンダーが表示されてから処理が実行される
+    // setTimeout(() => {
+    const btn = document.querySelector('.fc-customButton-button');
+    if (btn) {
+      // ボタンクリックでグラフを表示
+      btn.addEventListener("click", function () {
+        weightChart.classList.add('active');
+        updateChart(7); // 初期表示は1週間
+      });
+    }
+    //最低３ミリ秒かかる
+    // }, 3);
   },
   dateClick: function (info) { // 日付マスのクリックイベント
     selectedDate = info.dateStr; // 選択された日付を保存
@@ -141,6 +147,7 @@ function getPastWeekDates() {
     const date = new Date(today);
     date.setDate(today.getDate() - i);
     dates.push(date.toISOString().split('T')[0]);
+    console.log(dates);
   }
 
   return dates;
@@ -173,23 +180,31 @@ let myLineChart = new Chart(ctx, {
         borderColor: "rgba(255,0,0,1)",
         backgroundColor: "rgba(255,0,0,0.2)",
         fill: true,
+      },
+      {
+        label: '体調', // 棒グラフ用のデータセット
+        data: [], // 体重データ
+        borderColor: "rgba(0,0,255,1)", // 線の色（棒グラフ用）
+        backgroundColor: "rgba(0,0,255,0.2)", // 棒の背景色
+        type: 'bar', // 棒グラフ
+        barPercentage: 0.5, // 棒グラフの幅を調整
       }
     ],
   },
   options: {
+    //   legend: {
+    //     display: false
+    // },
     responsive: true,
     title: {
       display: true,
-      text: '今週の体重'
+      text: '今週の体重と体調'
     },
     scales: {
       y: {
         // beginAtZero: false,
-        min: 30,      // Y軸の最小値を0に設定
+        min: 0,
         max: 80,
-
-        // suggestedMax: 200,
-        // suggestedMin: 30,
         ticks: {
           stepSize: 5,
           callback: function (value) {
@@ -234,13 +249,41 @@ function getWeightsForPeriod(days) {
     weights: weights,
   };
 }
+// 過去1週間の体調データを取得（数値化）
+function getWeeklyConditions() {
+  const pastWeekDates = getPastWeekDates();
+  const conditions = pastWeekDates.map(date => {
+    const record = healthRecords.find(record => record.date === date);
+    // console.log(record);
+    if (record) {
+      switch (record.condition) {
+        case "良い": return 1; // 良い -> 1
+        case "普通": return 2; // 普通 -> 2
+        case "悪い": return 3; // 悪い -> 3
+        default: return 0; // 未設定の場合は 0
+      }
+    } else {
+      return 0; // データがない場合は 0
+    }
+  });
+  console.log(pastWeekDates);
+  console.log(conditions);
+  return {
+    labels: pastWeekDates,
+    conditions: conditions,
+  };
+}
+
 
 // グラフを更新
-function updateChart() {
+function updateChart(days) {
   const { labels, weights } = getWeightsForPeriod(days);
+  const { conditions } = getWeeklyConditions();
+  // console.log("確認", getWeeklyConditions);
   myLineChart.data.labels = labels;
   myLineChart.data.datasets[0].data = weights;
-  myLineChart.update();
+  myLineChart.data.datasets[1].data = conditions; // 体調データ
+  myLineChart.update(); // グラフを更新
 }
 
 // フォーム送信処理
@@ -279,7 +322,7 @@ recordForm.addEventListener('submit', function (e) {
       backgroundColor: 'green',
     });
     calendar.addEvent({
-      title: `体調:😄 ${record.condition}`,
+      title: `体調: ${record.condition}`,
       start: record.date,
       allDay: true,
       backgroundColor: 'blue', // 色を変えた方がわかりやすいかも
@@ -290,7 +333,7 @@ recordForm.addEventListener('submit', function (e) {
   alert(`体重 ${weight}kg と体調 (${condition}) を記録しました: ${selectedDate}`);
 
   // グラフを更新
-  updateChart();
+  updateChart(7);
 
   // モーダルを閉じる
   modal.classList.remove('active');
@@ -304,28 +347,23 @@ cancelModalButton.addEventListener('click', function () {
 });
 
 // document.getElementById('btnChart').addEventListener('click', function () {
-//   weightChart.classList.toggle('active');
+//   weightChart.classList.add('active');
 // });
 
 closeChart.addEventListener("click", function () {
-  weightChart.classList.toggle('active');
+  weightChart.classList.remove('active');
 });
 
-// ボタンクリックでグラフを表示
-btnChart.addEventListener("click", function () {
-  weightChart.classList.toggle('active');
-  updateChart(7); // 初期表示は1週間
-});
+
 
 //期間切り替え
-document.querySelectorAll(".chartToggle").forEach(button => {
+document.querySelectorAll(".chartChange").forEach(button => {
   button.addEventListener("click", function () {
+    // ３０日、９０日、１８０日でグラフの切り替え
     const days = Number(this.dataset.period);
     updateChart(days);
   });
 });
 
-// ページロード時にグラフを初期化
-updateChart();
 
 
