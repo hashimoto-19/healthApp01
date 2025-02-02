@@ -3,10 +3,10 @@ const modal = document.getElementById('modal');
 const cancelModalButton = document.getElementById('cancelModal');
 const recordForm = document.getElementById('recordForm');
 const weightInput = document.getElementById('weight');
-const ctx = document.getElementById("myLineChart");
+const ctx = document.getElementById("myLineChart").getContext("2d");
 const weightChart = document.getElementById("weightChart");
 const closeChart = document.getElementById("closeChart");
-
+const btnChart = document.getElementById("btnChart");
 
 
 // 全角数字を半角数字に変換する関数
@@ -160,6 +160,7 @@ function getWeeklyWeights() {
 }
 
 
+
 // グラフの初期化
 let myLineChart = new Chart(ctx, {
   type: 'line',
@@ -176,6 +177,7 @@ let myLineChart = new Chart(ctx, {
     ],
   },
   options: {
+    responsive: true,
     title: {
       display: true,
       text: '今週の体重'
@@ -189,7 +191,7 @@ let myLineChart = new Chart(ctx, {
         // suggestedMax: 200,
         // suggestedMin: 30,
         ticks: {
-          stepSize: 10,
+          stepSize: 5,
           callback: function (value) {
             return value + ' kg';
           }
@@ -203,9 +205,39 @@ let myLineChart = new Chart(ctx, {
   }
 });
 
+// 過去○日分のデータ取得
+
+function getPastDates(days) {
+  const today = new Date();
+  const dates = [];
+
+  // 選択された日数分、過去の日付を計算
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    dates.push(date.toISOString().split('T')[0]);
+  }
+
+  return dates;
+}
+
+
+function getWeightsForPeriod(days) {
+  const dates = getPastDates(days); // 日付を取得
+  const weights = dates.map(date => {
+    const record = healthRecords.find(record => record.date === date);
+    return record ? parseFloat(record.weight) : null;
+  });
+
+  return {
+    labels: dates,
+    weights: weights,
+  };
+}
+
 // グラフを更新
 function updateChart() {
-  const { labels, weights } = getWeeklyWeights();
+  const { labels, weights } = getWeightsForPeriod(days);
   myLineChart.data.labels = labels;
   myLineChart.data.datasets[0].data = weights;
   myLineChart.update();
@@ -271,19 +303,24 @@ cancelModalButton.addEventListener('click', function () {
   recordForm.reset();
 });
 
-document.getElementById('btnChart').addEventListener('click', function () {
-  const weightChart = document.getElementById('weightChart');
-  weightChart.classList.toggle('active');
-});
+// document.getElementById('btnChart').addEventListener('click', function () {
+//   weightChart.classList.toggle('active');
+// });
 
 closeChart.addEventListener("click", function () {
   weightChart.classList.toggle('active');
 });
 
+// ボタンクリックでグラフを表示
+btnChart.addEventListener("click", function () {
+  weightChart.classList.toggle('active');
+  updateChart(7); // 初期表示は1週間
+});
+
 //期間切り替え
 document.querySelectorAll(".chartToggle").forEach(button => {
   button.addEventListener("click", function () {
-    const days = parseInt(this.dataset.period, 10);
+    const days = Number(this.dataset.period);
     updateChart(days);
   });
 });
