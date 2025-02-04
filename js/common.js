@@ -147,7 +147,6 @@ function getPastWeekDates() {
     const date = new Date(today);
     date.setDate(today.getDate() - i);
     dates.push(date.toISOString().split('T')[0]);
-    console.log(dates);
   }
 
   return dates;
@@ -180,6 +179,7 @@ let myLineChart = new Chart(ctx, {
         borderColor: "rgba(255,0,0,1)",
         backgroundColor: "rgba(255,0,0,0.2)",
         fill: true,
+        yAxisID: 'y1', // 体重の Y 軸
       },
       {
         label: '体調', // 棒グラフ用のデータセット
@@ -188,6 +188,7 @@ let myLineChart = new Chart(ctx, {
         backgroundColor: "rgba(0,0,255,0.2)", // 棒の背景色
         type: 'bar', // 棒グラフ
         barPercentage: 0.5, // 棒グラフの幅を調整
+        yAxisID: 'y2', // 体重の Y 軸
       }
     ],
   },
@@ -201,14 +202,27 @@ let myLineChart = new Chart(ctx, {
       text: '今週の体重と体調'
     },
     scales: {
-      y: {
+      y1: {
         // beginAtZero: false,
+        position: 'left',
         min: 0,
         max: 80,
         ticks: {
           stepSize: 5,
           callback: function (value) {
             return value + ' kg';
+          }
+        }
+      },
+      y2: {
+        position: 'right', // 体調データは右側の Y 軸にする
+        min: 0,
+        max: 3, // 体調の範囲に変更
+        ticks: {
+          stepSize: 1, // 1ずつ増えるように設定
+          callback: function (value) {
+            const conditionLabels = { 0: "未設定", 1: "悪い", 2: "普通", 3: "良い" };
+            return conditionLabels[value] || value;
           }
         }
       }
@@ -249,27 +263,29 @@ function getWeightsForPeriod(days) {
     weights: weights,
   };
 }
-// 過去1週間の体調データを取得（数値化）
-function getWeeklyConditions() {
-  const pastWeekDates = getPastWeekDates();
-  const conditions = pastWeekDates.map(date => {
+// 過去の体調データを取得（数値化）
+function getConditionsForPeriod(days) {
+  const pastDates = getPastDates(days);
+  const conditions = pastDates.map(date => {
     const record = healthRecords.find(record => record.date === date);
     // console.log(record);
     if (record) {
-      switch (record.condition) {
-        case "良い": return 1; // 良い -> 1
+
+      const condition = (record.condition || "").trim();
+      switch (condition) {
+        case "良い": return 3; // 良い -> 1
         case "普通": return 2; // 普通 -> 2
-        case "悪い": return 3; // 悪い -> 3
+        case "悪い": return 1; // 悪い -> 3
         default: return 0; // 未設定の場合は 0
       }
     } else {
       return 0; // データがない場合は 0
     }
   });
-  console.log(pastWeekDates);
-  console.log(conditions);
+  // console.log(pastWeekDates);
+  // console.log(conditions);
   return {
-    labels: pastWeekDates,
+    labels: pastDates,
     conditions: conditions,
   };
 }
@@ -278,7 +294,7 @@ function getWeeklyConditions() {
 // グラフを更新
 function updateChart(days) {
   const { labels, weights } = getWeightsForPeriod(days);
-  const { conditions } = getWeeklyConditions();
+  const { conditions } = getConditionsForPeriod(days);
   // console.log("確認", getWeeklyConditions);
   myLineChart.data.labels = labels;
   myLineChart.data.datasets[0].data = weights;
