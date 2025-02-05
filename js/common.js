@@ -297,8 +297,13 @@ function updateChart(days) {
   const { conditions } = getConditionsForPeriod(days);
   // console.log("確認", getWeeklyConditions);
   myLineChart.data.labels = labels;
-  myLineChart.data.datasets[0].data = weights;
-  myLineChart.data.datasets[1].data = conditions; // 体調データ
+  myLineChart.data.datasets[0].data = weights.map(w => w !== null ? w : 0);
+  myLineChart.data.datasets[1].data = conditions.map(c => c !== null ? c : 0);
+  // myLineChart.data.datasets[0].data = weights;
+  // myLineChart.data.datasets[1].data = conditions; // 体調データ
+  // **y2 のスケールを固定**
+  myLineChart.options.scales.y2.min = 0;
+  myLineChart.options.scales.y2.max = 3;
   myLineChart.update(); // グラフを更新
 }
 
