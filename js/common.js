@@ -129,7 +129,7 @@ healthRecords.forEach(record => {
   });
 
   calendar.addEvent({
-    title: `体調: 😄${record.condition}`,
+    title: `体調: ${record.condition}`,
     start: record.date,
     allDay: true, // 終日イベント
     backgroundColor: 'blue', // イベント背景色
@@ -147,6 +147,7 @@ function getPastWeekDates() {
     const date = new Date(today);
     date.setDate(today.getDate() - i);
     dates.push(date.toISOString().split('T')[0]);
+    console.log(dates);
   }
 
   return dates;
@@ -176,19 +177,19 @@ let myLineChart = new Chart(ctx, {
       {
         label: '体重 (kg)',
         data: [], // 体重データ
-        borderColor: "rgba(255,0,0,1)",
+        // borderColor: "rgba(255,0,0,1)",
         backgroundColor: "rgba(255,0,0,0.2)",
         fill: true,
-        yAxisID: 'y1', // 体重の Y 軸
+        yAxisID: "y" // 体調は右軸
       },
       {
-        label: '体調', // 棒グラフ用のデータセット
+        label: '体調(3段階)', // 棒グラフ用のデータセット
         data: [], // 体重データ
-        borderColor: "rgba(0,0,255,1)", // 線の色（棒グラフ用）
+        // borderColor: "rgba(0,0,255,1)", // 線の色（棒グラフ用）
         backgroundColor: "rgba(0,0,255,0.2)", // 棒の背景色
         type: 'bar', // 棒グラフ
         barPercentage: 0.5, // 棒グラフの幅を調整
-        yAxisID: 'y2', // 体重の Y 軸
+        yAxisID: "y1" // 体調は右軸
       }
     ],
   },
@@ -202,10 +203,10 @@ let myLineChart = new Chart(ctx, {
       text: '今週の体重と体調'
     },
     scales: {
-      y1: {
+      y: {
+        position: "left",
         // beginAtZero: false,
-        position: 'left',
-        min: 0,
+        min: 30,
         max: 80,
         ticks: {
           stepSize: 5,
@@ -214,15 +215,18 @@ let myLineChart = new Chart(ctx, {
           }
         }
       },
-      y2: {
-        position: 'right', // 体調データは右側の Y 軸にする
-        min: 0,
-        max: 3, // 体調の範囲に変更
+      y1: {
+        position: "right",
+        // beginAtZero: false,
+        min: 1,
+        max: 5,
         ticks: {
-          stepSize: 1, // 1ずつ増えるように設定
+          stepSize: 1,
           callback: function (value) {
-            const conditionLabels = { 0: "未設定", 1: "悪い", 2: "普通", 3: "良い" };
-            return conditionLabels[value] || value;
+            if (value === 3) return "良い";
+            if (value === 2) return "普通";
+            if (value === 1) return "悪い";
+            return "";
           }
         }
       }
@@ -263,47 +267,38 @@ function getWeightsForPeriod(days) {
     weights: weights,
   };
 }
-// 過去の体調データを取得（数値化）
 function getConditionsForPeriod(days) {
-  const pastDates = getPastDates(days);
-  const conditions = pastDates.map(date => {
+  const dates = getPastDates(days); // 日付リスト取得
+  const conditions = dates.map(date => {
     const record = healthRecords.find(record => record.date === date);
-    // console.log(record);
     if (record) {
-
-      const condition = (record.condition || "").trim();
-      switch (condition) {
-        case "良い": return 3; // 良い -> 1
-        case "普通": return 2; // 普通 -> 2
-        case "悪い": return 1; // 悪い -> 3
-        default: return 0; // 未設定の場合は 0
+      switch (record.condition) {
+        case "良い": return 3;
+        case "普通": return 2;
+        case "悪い": return 1;
+        default: return 0;
       }
     } else {
-      return 0; // データがない場合は 0
+      return 0;
     }
   });
-  // console.log(pastWeekDates);
-  // console.log(conditions);
   return {
-    labels: pastDates,
+    labels: dates,
     conditions: conditions,
   };
 }
+
 
 
 // グラフを更新
 function updateChart(days) {
   const { labels, weights } = getWeightsForPeriod(days);
   const { conditions } = getConditionsForPeriod(days);
+
   // console.log("確認", getWeeklyConditions);
   myLineChart.data.labels = labels;
-  myLineChart.data.datasets[0].data = weights.map(w => w !== null ? w : 0);
-  myLineChart.data.datasets[1].data = conditions.map(c => c !== null ? c : 0);
-  // myLineChart.data.datasets[0].data = weights;
-  // myLineChart.data.datasets[1].data = conditions; // 体調データ
-  // **y2 のスケールを固定**
-  myLineChart.options.scales.y2.min = 0;
-  myLineChart.options.scales.y2.max = 3;
+  myLineChart.data.datasets[0].data = weights;
+  myLineChart.data.datasets[1].data = conditions; // 体調データ
   myLineChart.update(); // グラフを更新
 }
 
@@ -385,6 +380,3 @@ document.querySelectorAll(".chartChange").forEach(button => {
     updateChart(days);
   });
 });
-
-
-
