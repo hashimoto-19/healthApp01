@@ -15,6 +15,7 @@ main {
   padding: 20px 0;
   max-width: 1000px;
   width: 100%;
+  // height: 90vh;
 }
 
 
@@ -28,7 +29,7 @@ main {
     width: 100%;
     max-width: 1000px;
     margin: 0 auto;
-    height: 50%; /* 高さを画面の半分に設定 */
+    height: 60vh; /* 高さを画面の半分に設定 */
     background: white;
     padding: 20px;
     // box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
@@ -47,6 +48,7 @@ main {
     transform: translateX(-50%);
     width: 100%;
     max-width: 1000px;
+    height: 90vh;
     margin: 0 auto;
     background: white;
     padding: 20px;
@@ -62,6 +64,7 @@ main {
     background-color: #4DD0CC;
     margin-bottom: 0;
     padding: 20px;
+    height: 10vh;
   }
   .fc-toolbar-title {
     color: #FFFFFF;
@@ -159,8 +162,8 @@ outline:0;
   }
 }
 
-// .fc-day-other {
-//   .fc-daygrid-day-top, .fc-scrollgrid-sync-inner .fc-col-header-cell-cushion, .fc-list-day-cushion {
-//     color: grey;
-//   }
-// }
+.holiday-event .fc-event-title {
+  font-size: 10px;
+  color: red;
+  padding-top: 0;
+}

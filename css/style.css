@@ -27,7 +27,7 @@ main {
   width: 100%;
   max-width: 1000px;
   margin: 0 auto;
-  height: 50%; /* 高さを画面の半分に設定 */
+  height: 60vh; /* 高さを画面の半分に設定 */
   background: white;
   padding: 20px;
   z-index: 1000;
@@ -47,6 +47,7 @@ main {
   transform: translateX(-50%);
   width: 100%;
   max-width: 1000px;
+  height: 90vh;
   margin: 0 auto;
   background: white;
   padding: 20px;
@@ -63,14 +64,11 @@ main {
   background-color: #4DD0CC;
   margin-bottom: 0;
   padding: 20px;
+  height: 10vh;
 }
 
 .fc-toolbar-title {
   color: #FFFFFF;
-}
-
-.fc .fc-button-primary:disabled {
-  background-color: #ac4747;
 }
 
 .fc-day-sun {
@@ -160,4 +158,10 @@ button:focus {
 }
 .btnWrap button {
   display: inline-block;
+}
+
+.holiday-event .fc-event-title {
+  font-size: 10px;
+  color: red;
+  padding-top: 0;
 }/*# sourceMappingURL=style.css.map */
