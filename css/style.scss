@@ -167,3 +167,42 @@ outline:0;
   color: red;
   padding-top: 0;
 }
+.fc-event-main-frame {
+  pointer-events: none;
+
+}
+.holiday-event {
+  // pointer-events: none;
+}
+
+.fc-daygrid-event::after, .fc-daygrid-event::before {
+  display: none;
+} 
+.fc-h-event {
+  border: 0;
+  box-shadow: none;
+}
+
+// .fc-daygrid-day-frame {
+//   position: relative;
+// }
+.fc .fc-daygrid-day-frame {
+  padding-top: 40px;
+}
+
+.fc-daygrid-day-number {
+  position: absolute!important;
+  left: 5px;  /* 左端に寄せる */
+  top: 5px;   /* 上端に寄せる */
+  font-size: 14px; /* 必要ならサイズ調整 */
+}
+
+.large-month {
+  font-size: 24px;  /* 2月のフォントサイズを大きく */
+  font-weight: bold;
+  color: #d12e2e;  /* 例: 赤色 */
+}
+
+.fc-event-selected, .fc-event:focus { 
+  box-shadow: none
+}

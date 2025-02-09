@@ -9,6 +9,33 @@ const closeChart = document.getElementById("closeChart");
 const btnChart = document.getElementById("btnChart");
 
 
+// 祝日APIを取得してカレンダーに追加
+fetch('https://holidays-jp.github.io/api/v1/date.json')
+  .then(response => response.json())
+  .then(data => {
+    const holidayDates = Object.keys(data); // 祝日の日付を取得
+
+    const holidayEvents = Object.entries(data).map(([date, title]) => ({
+      title: title,
+      start: date,
+      allDay: true,
+      // display: 'background',
+      backgroundColor: 'transparent', // 祝日の背景色
+      textColor: '#333',
+      borderColor: 'transparent',
+      editable: false,
+      className: 'holiday-event'
+    }));
+    console.log(holidayEvents);
+
+    holidayEvents.forEach(event => calendar.addEvent(event)); // 祝日データをカレンダーに追加
+
+
+
+    calendar.render();
+
+  });
+
 // 全角数字を半角数字に変換する関数
 function convertToHalfWidth(input) {
   return input.replace(/[０-９]/g, function (s) {
@@ -55,10 +82,23 @@ const updateFormWithRecord = (record) => {
 // ローカルストレージからデータを読み込む
 const healthRecords = JSON.parse(localStorage.getItem("healthRecords")) || [];
 
+
+let holidays = {}; // 祝日データを格納
+
+// 祝日データを取得
+fetch('https://holidays-jp.github.io/api/v1/date.json')
+  .then(response => response.json())
+  .then(data => {
+    holidays = data; // 祝日データを保存
+  })
+  .catch(error => console.error("祝日データの取得に失敗:", error));
+
+
 // カレンダーの初期化
 const calendar = new FullCalendar.Calendar(calendarEl, {
   initialView: 'dayGridMonth', // 月表示
   locale: 'ja', // 日本語対応
+  contentHeight: 'auto',
   buttonText: {
     today: '今月'  // 「Today」ボタンのラベルを変更
   },
@@ -68,17 +108,40 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
     right: 'customButton' // ボタンを右側に追加
   },
   titleFormat: { year: 'numeric', month: 'long' },
-  customButtons: {
-    customButton: {
-      text: 'グラフ', // ボタンのテキスト
-      click: function () {
 
-        const weightChart = document.getElementById('weightChart');
-        weightChart.classList.toggle('active');
-
-      }
+  datesSet: function () {
+    const titleElement = document.querySelector('.fc-toolbar-title');
+    console.log(titleElement);
+    if (titleElement) {
+      titleElement.innerHTML = titleElement.innerHTML.replace(/(\d{4}年)(\d+月)/,
+        '$1 <span class="large-month">$2</span>');
     }
   },
+
+  dayCellDidMount: function (info) {
+    const dateStr = info.date.toISOString().split('T')[0]; // YYYY-MM-DD 形式
+
+    // 祝日かどうかをチェック
+    if (holidays[dateStr]) {
+      info.el.style.backgroundColor = '#ffe4e1'; // 祝日の背景色
+      info.el.style.color = 'red'; // 祝日の文字色
+      info.el.title = holidays[dateStr]; // ツールチップとして祝日名を表示
+    }
+  }
+},
+
+  eventOrder: "-extendedProps.isHoliday,allDay,title,start",
+  customButtons: {
+  customButton: {
+    text: 'グラフ', // ボタンのテキスト
+    click: function () {
+
+      const weightChart = document.getElementById('weightChart');
+      weightChart.classList.remove('active');
+
+    }
+  }
+},
   eventDidMount: function () {
     //カレンダーが表示されてから処理が実行される
     // setTimeout(() => {
@@ -115,6 +178,9 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   },
   ///登録済みのものを触る場合
   eventClick: function (info) {
+    if (info.event.extendedProps.isHoliday) {
+      return; // 
+    }
     const date = new Date(info.event.start);
     const selectedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')
       }-${String(date.getDate()).padStart(2, '0')}`; // YYYY-MM-DD 形式に変換
@@ -131,22 +197,35 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
     modal.classList.add('active');
   }
 });
+
+
 // ローカルストレージに保存されている体重データをカレンダーに追加
 healthRecords.forEach(record => {
+  // 体重のイベント（色を変える）
   calendar.addEvent({
-    title: `${record.weight}kg`,
+    title: `体重: ${record.weight}kg`,
     start: record.date,
-    allDay: true, // 終日イベント
-    backgroundColor: 'green', // イベント背景色
+    allDay: true,
+    backgroundColor: record.weight >= 70 ? 'red' : 'blue', // 70kg以上は赤、それ未満は青
+    extendedProps: { isHoliday: false },
+    textColor: 'white'
   });
 
+  // 体調のイベント（良い＝緑、普通＝黄色、悪い＝赤）
+  let conditionColor = 'gray';
+  if (record.condition === "良い") conditionColor = 'green';
+  if (record.condition === "普通") conditionColor = 'yellow';
+  if (record.condition === "悪い") conditionColor = 'red';
+
   calendar.addEvent({
-    title: `${record.condition}`,
+    title: `体調: ${record.condition}`,
     start: record.date,
-    allDay: true, // 終日イベント
-    backgroundColor: 'blue', // イベント背景色
+    allDay: true,
+    backgroundColor: conditionColor,
+    textColor: 'black'
   });
 });
+
 
 // 祝日APIを取得してカレンダーに追加
 fetch('https://holidays-jp.github.io/api/v1/date.json')
@@ -161,27 +240,19 @@ fetch('https://holidays-jp.github.io/api/v1/date.json')
       // display: 'background',
       backgroundColor: 'transparent', // 祝日の背景色
       textColor: '#333',
+      display: 'block', //  祝日をしっかり表示（背景ではなくイベントとして）
+      extendedProps: { isHoliday: true },
       borderColor: 'transparent',
       editable: false,
       className: 'holiday-event'
     }));
-    console.log(holidayEvents);
 
-    holidayEvents.forEach(event => calendar.addEvent(event)); // 祝日データをカレンダーに追加
-
-    // 祝日の日付マスの背景色を変更
-    calendar.setOption('dayCellDidMount', function (info) {
-      // `YYYY-MM-DD` 形式に変換（ローカル時間対応）
-      const dateStr = info.date.toLocaleDateString('sv-SE'); // スウェーデン表記: "YYYY-MM-DD"
-
-      if (holidayDates.includes(dateStr)) {
-        info.el.style.backgroundColor = 'rgba(0, 255, 119, 0.2)'; // 緑の薄い背景色
-      }
-    });
+    calendar.render();
 
 
 
-  })
+
+  });
 
 
 
@@ -310,8 +381,9 @@ function getWeightsForPeriod(days) {
   let lastWeight = null; // 直前の値を保持
   const weights = dates.map(date => {
     const record = healthRecords.find(record => record.date === date);
-    if (record && record.weight) {
+    if (record) {
       lastWeight = parseFloat(record.weight); // 記録があれば更新
+      return lastWeight;
     }
     return lastWeight;
   });
@@ -323,18 +395,17 @@ function getWeightsForPeriod(days) {
 }
 function getConditionsForPeriod(days) {
   const dates = getPastDates(days); // 日付リスト取得
-  let lastCondition = 0;
-
   const conditions = dates.map(date => {
     const record = healthRecords.find(record => record.date === date);
-    if (record && record.condition) {
+    if (record) {
       switch (record.condition) {
-        case "良い": lastCondition = 3; break;
-        case "普通": lastCondition = 2; break;
-        case "悪い": lastCondition = 1; break;
+        case "良い": return 3;
+        case "普通": return 2;
+        case "悪い": return 1;
+        default: return 0;
       }
     } else {
-      return lastCondition;
+      return 0;
     }
   });
   return {
@@ -380,40 +451,7 @@ recordForm.addEventListener('submit', function (e) {
     });
   }
 
-  // 祝日APIを取得してカレンダーに追加
-  fetch('https://holidays-jp.github.io/api/v1/date.json')
-    .then(response => response.json())
-    .then(data => {
-      const holidayDates = Object.keys(data); // 祝日の日付を取得
 
-      const holidayEvents = Object.entries(data).map(([date, title]) => ({
-        title: title,
-        start: date,
-        allDay: true,
-        // display: 'background',
-        backgroundColor: 'transparent', // 祝日の背景色
-        textColor: '#333',
-        borderColor: 'transparent',
-        editable: false,
-        className: 'holiday-event'
-      }));
-      console.log(holidayEvents);
-
-      holidayEvents.forEach(event => calendar.addEvent(event)); // 祝日データをカレンダーに追加
-
-      // 祝日の日付マスの背景色を変更
-      calendar.setOption('dayCellDidMount', function (info) {
-        // `YYYY-MM-DD` 形式に変換（ローカル時間対応）
-        const dateStr = info.date.toLocaleDateString('sv-SE'); // スウェーデン表記: "YYYY-MM-DD"
-
-        if (holidayDates.includes(dateStr)) {
-          info.el.style.backgroundColor = 'rgba(0, 255, 119, 0.2)'; // 緑の薄い背景色
-        }
-      });
-
-
-
-    })
 
 
   // ローカルストレージにデータを保存
@@ -422,22 +460,31 @@ recordForm.addEventListener('submit', function (e) {
   // カレンダーにイベントを更新または追加
   calendar.removeAllEvents(); // 既存のイベントを削除
   healthRecords.forEach(record => {
+    // 体重のイベント（色を変える）
     calendar.addEvent({
       title: `体重: ${record.weight}kg`,
       start: record.date,
       allDay: true,
-      backgroundColor: 'green',
+      backgroundColor: record.weight >= 70 ? 'red' : 'blue', // 70kg以上は赤、それ未満は青
+      extendedProps: { isHoliday: false },
+      textColor: 'white'
     });
+
+    // 体調のイベント（良い＝緑、普通＝黄色、悪い＝赤）
+    let conditionColor = 'gray';
+    if (record.condition === "良い") conditionColor = 'green';
+    if (record.condition === "普通") conditionColor = 'yellow';
+    if (record.condition === "悪い") conditionColor = 'red';
+
     calendar.addEvent({
       title: `体調: ${record.condition}`,
       start: record.date,
       allDay: true,
-      backgroundColor: 'blue', // 色を変えた方がわかりやすいかも
+      backgroundColor: conditionColor,
+      textColor: 'black'
     });
   });
 
-
-  alert(`体重 ${weight}kg と体調 (${condition}) を記録しました: ${selectedDate}`);
 
   // グラフを更新
   updateChart(7);
